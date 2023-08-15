@@ -3,6 +3,10 @@
 
 ## Overview
 
+## Some screenshots of the project:
+
+![BS ](https://github.com/DevJSter/Comparison-Between-Binary-Search-And-Linear-Search-Using-ReactJs/assets/115056248/cb5ff848-2bc3-4a47-8c5a-c9a6fb72e025)
+
 Welcome to **"Binary Search vs. Linear Search: A Visual Comparison"** - an educational ReactJS web application that showcases a side-by-side comparison of two popular searching algorithms: Binary Search and Linear Search. This project aims to provide an interactive platform for users to understand the differences in efficiency and performance between these search methods when applied to sorted arrays.
 
 ## Key Features
