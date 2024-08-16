@@ -11,16 +11,18 @@ function App() {
   const [resultArr, setResultArr] = useState([]);
   const [index, setIndex] = useState(null);
   const [condition, setCondition] = useState(null);
+  const [userInput, setUserInput] = useState("");
 
-  const generateArray = () => {
-    const temp = [];
-    while (temp.length < 40) {
-      const r = Math.round(Math.random() * 60 + 1);
-      if (!temp.includes(r)) {
-        temp.push(r);
-      }
-    }
-    setArray(temp);
+  const handleUserInput = (e) => {
+    setUserInput(e.target.value);
+  };
+
+  const parseUserInput = () => {
+    const parsedArray = userInput
+      .split(",")
+      .map(Number)
+      .filter((num) => !isNaN(num));
+    setArray(parsedArray);
     document.querySelector(".node_container").classList.remove("hidden");
   };
 
@@ -60,16 +62,18 @@ function App() {
     setReset(true);
     setIndex(null);
     setCondition(null);
+    setUserInput("");
     document.querySelector(".analysis_div").classList.add("hidden");
     window.location.reload();
   };
 
   const handleSearch = ([, searchType]) => {
-    const searchEle = searchType === "linear" ? array[19] : array[15];
+    const arr = searchType === "binary" ? [...array].sort((a, b) => a - b) : array;
+    const searchEle = arr[Math.floor(arr.length / 2)];
     const [isFound, idx, steps] =
       searchType === "linear"
-        ? linearSearch(array, searchEle)
-        : binarySearch(array, searchEle);
+        ? linearSearch(arr, searchEle)
+        : binarySearch(arr, searchEle);
 
     setFound(isFound);
     setResultArr(steps);
@@ -81,14 +85,14 @@ function App() {
         complexity =
           idx === 0
             ? "Best Case O(1)"
-            : idx < array.length / 2
+            : idx < arr.length / 2
             ? "Average Case <= O(n/2)"
             : "Worst Case O(n)";
       } else {
         complexity =
-          idx === Math.floor(array.length / 2)
+          idx === Math.floor(arr.length / 2)
             ? "Best Case O(1)"
-            : idx === 0 || idx === array.length - 1
+            : idx === 0 || idx === arr.length - 1
             ? "Worst Case O(log n)"
             : "Average Case < O(log n)";
       }
@@ -141,9 +145,16 @@ function App() {
         <Navigation
           onReset={handleReset}
           onSearch={handleSearch}
-          onUpdate={generateArray}
+          onUpdate={parseUserInput}
           onExplainAlgorithm={setAlgorithmExplain}
         />
+        <input
+          type="text"
+          value={userInput}
+          onChange={handleUserInput}
+          placeholder="Enter comma-separated numbers"
+        />
+        <button onClick={parseUserInput}>Submit Array</button>
         <NodeContainer
           updatedArray={array.sort((a, b) => a - b)}
           state={true}
