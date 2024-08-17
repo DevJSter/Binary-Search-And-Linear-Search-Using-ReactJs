@@ -1,6 +1,6 @@
 import Navigation from "./UI/navigation";
 import NodeContainer from "./UI/nodeContainer";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
@@ -12,79 +12,96 @@ function App() {
   const [index, setIndex] = useState(null);
   const [condition, setCondition] = useState(null);
 
-  const generateArray = useCallback(() => {
-    const temp = Array.from({ length: 40 }, () => Math.floor(Math.random() * 60) + 1);
-    setArray([...new Set(temp)]);
+  const generateArray = () => {
+    const temp = [];
+    while (temp.length < 40) {
+      const r = Math.round(Math.random() * 60 + 1);
+      if (!temp.includes(r)) {
+        temp.push(r);
+      }
+    }
+    setArray(temp);
     document.querySelector(".node_container").classList.remove("hidden");
-  }, []);
+  };
 
-  const binarySearch = useCallback((arr, searchEle) => {
-    let left = 0, right = arr.length - 1;
+  const binarySearch = (array, searchEle) => {
+    let left = 0;
+    let right = array.length - 1;
     const steps = [];
 
     while (left <= right) {
       const mid = Math.floor((left + right) / 2);
-      steps.push(arr[mid]);
+      const midEle = array[mid];
+      steps.push(midEle);
 
-      if (arr[mid] === searchEle) return [true, mid, steps];
-      arr[mid] < searchEle ? (left = mid + 1) : (right = mid - 1);
+      if (midEle === searchEle) {
+        return [true, mid, steps];
+      } else if (searchEle < midEle) {
+        right = mid - 1;
+      } else {
+        left = mid + 1;
+      }
     }
     return [false, null, steps];
-  }, []);
+  };
 
-  const linearSearch = useCallback((arr, searchEle) => {
+  const linearSearch = (array, searchEle) => {
     const steps = [];
-    for (let i = 0; i < arr.length; i++) {
-      steps.push(arr[i]);
-      if (arr[i] === searchEle) return [true, i, steps];
+    for (let i = 0; i < array.length; i++) {
+      steps.push(array[i]);
+      if (array[i] === searchEle) {
+        return [true, i, steps];
+      }
     }
     return [false, null, steps];
-  }, []);
+  };
 
-  const handleReset = useCallback(() => {
+  const handleReset = () => {
     setReset(true);
     setIndex(null);
     setCondition(null);
     document.querySelector(".analysis_div").classList.add("hidden");
     window.location.reload();
-  }, []);
+  };
 
-  const handleSearch = useCallback(
-    ([, searchType]) => {
-      const searchEle = searchType === "linear" ? array[19] : array[15];
-      const [isFound, idx, steps] =
-        searchType === "linear" ? linearSearch(array, searchEle) : binarySearch(array, searchEle);
+  const handleSearch = ([, searchType]) => {
+    const searchEle = searchType === "linear" ? array[19] : array[15];
+    const [isFound, idx, steps] =
+      searchType === "linear"
+        ? linearSearch(array, searchEle)
+        : binarySearch(array, searchEle);
 
-      setFound(isFound);
-      setResultArr(steps);
-      setIndex(idx);
+    setFound(isFound);
+    setResultArr(steps);
+    setIndex(idx);
 
-      if (isFound) {
-        const halfLen = Math.floor(array.length / 2);
-        const complexity =
-          searchType === "linear"
-            ? idx === 0
-              ? "Best Case O(1)"
-              : idx < halfLen
-              ? "Average Case <= O(n/2)"
-              : "Worst Case O(n)"
-            : idx === halfLen
+    if (isFound) {
+      let complexity;
+      if (searchType === "linear") {
+        complexity =
+          idx === 0
+            ? "Best Case O(1)"
+            : idx < array.length / 2
+            ? "Average Case <= O(n/2)"
+            : "Worst Case O(n)";
+      } else {
+        complexity =
+          idx === Math.floor(array.length / 2)
             ? "Best Case O(1)"
             : idx === 0 || idx === array.length - 1
             ? "Worst Case O(log n)"
             : "Average Case < O(log n)";
-
-        setCondition(complexity);
       }
+      setCondition(complexity);
+    }
 
-      document.querySelector(".analysis_div").classList.remove("hidden");
-    },
-    [array, binarySearch, linearSearch]
-  );
+    document.querySelector(".analysis_div").classList.remove("hidden");
+  };
 
-  const highlightNodes = useCallback(() => {
+  const highlightNodes = () => {
     if (!found) return;
 
+    const lastElement = resultArr.pop();
     resultArr.forEach((element, i) => {
       setTimeout(() => {
         const node = document.querySelector(`.node[uid="${element}"]`);
@@ -95,26 +112,21 @@ function App() {
       }, 200 * i);
     });
 
-    const lastElement = resultArr[resultArr.length - 1];
-    if (lastElement) {
-      setTimeout(() => {
-        const node = document.querySelector(`.node[uid="${lastElement}"]`);
-        if (node) {
-          node.style.backgroundColor = "#B0087F";
-        }
-      }, 200 * resultArr.length);
-    }
-  }, [found, resultArr]);
+    setTimeout(() => {
+      const node = document.querySelector(`.node[uid="${lastElement}"]`);
+      if (node) {
+        node.style.backgroundColor = "#B0087F";
+      }
+    }, 200 * resultArr.length);
+  };
+
+  useEffect(highlightNodes, [found, resultArr]);
 
   useEffect(() => {
-    highlightNodes();
-  }, [highlightNodes]);
-
-  useEffect(() => {
+    document.querySelectorAll(".node").forEach((element) => {
+      element.style.backgroundColor = "blueviolet";
+    });
     if (reset) {
-      document.querySelectorAll(".node").forEach((element) => {
-        element.style.backgroundColor = "blueviolet";
-      });
       setReset(false);
     }
   }, [reset]);
